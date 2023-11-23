@@ -45,9 +45,11 @@ class MACHINE():
 
         #독립선분 긋기 --> DFS 완전탐색, 시간 이슈 발생 
         simul_line_set = self.drawn_lines
+        self.minimum_independent_line_num = 1000000000
         self.simulation_independent_line(0,simul_line_set)
 
-        #print(self.independent_lines_case)
+        print(self.independent_lines_case)
+        print(len(self.independent_lines_case))
         max_length, longest_element = min([(len(x),x) for x in self.independent_lines_case])
         for line in longest_element:
             if line in self.drawn_lines:
@@ -68,9 +70,15 @@ class MACHINE():
     # DFS 완전탐색 for 독립선분 
     def simulation_independent_line(self, i, simul_line_set):
         print(i)
-        # if i == len(self.posible_lines)-1:
-        #     print("imworking")
-        #     self.independent_lines_case.append(simul_line_set)
+
+        # 독립변수 case 조사하는 개수 제한... 20까지 했는데 최적의 수가 21번째 나오면 답 없음... 타협 필요
+        # if len(self.independent_lines_case) == 20:
+        #     return
+
+        # 독립변수 case 조사할 때, 선분 수가 가장 적은 case 보다 simulation set이 많아지면 즉시 종료
+        if(len(simul_line_set) > self.minimum_independent_line_num):
+            return
+
         check = True
         for j in range(i, len(self.posible_lines)):
             if(self.check_temp_availability(simul_line_set, self.posible_lines[j])):
@@ -86,6 +94,8 @@ class MACHINE():
             self.organize_points(simul_line_set)
             if(not simul_line_set in self.independent_lines_case):
                 self.independent_lines_case.append(simul_line_set.copy())
+                if(self.minimum_independent_line_num > len(simul_line_set)):
+                    self.minimum_independent_line_num = len(simul_line_set)
                 print("independent_lines_case = ", self.independent_lines_case)
         print(i, " done")             
 
@@ -223,7 +233,7 @@ class MACHINE():
             if(self.check_temp_triangle(simul_line_set,next_line)):
                 simul_line_set.remove(line)
                 return False
-                
+
         simul_line_set.remove(line)
         return True
 
