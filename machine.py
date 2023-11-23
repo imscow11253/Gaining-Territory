@@ -207,13 +207,23 @@ class MACHINE():
     # simulation_line_set 에 포함된 선분을 대상으로 상대방에게 삼각형을 만드는 경우를 제공하는 선분인지를 판단
     def check_next_triangle(self, simul_line_set, line):
         simul_line_set.append(line)
+
+        point1 = line[0]
+        point2 = line[1]
+
+        connected_with_line = []
+
         for next_line in self.posible_lines:
             if next_line in simul_line_set:
                 continue
-            else:
-                if(self.check_temp_triangle(simul_line_set,next_line)):
-                    simul_line_set.remove(line)
-                    return False
+            elif point1 in next_line or point2 in next_line:
+                connected_with_line.append(next_line)
+
+        for next_line in connected_with_line:
+            if(self.check_temp_triangle(simul_line_set,next_line)):
+                simul_line_set.remove(line)
+                return False
+                
         simul_line_set.remove(line)
         return True
 
