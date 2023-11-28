@@ -6,6 +6,7 @@ import os
 import pandas as pd
 from shapely.geometry import LineString, Point, Polygon
 
+#from machine_from_jong import MACHINE
 from machine import MACHINE
 from options import PLAYERS, BACKGROUND, RADIUS, LINE_WIDTH, LINE_COLOR, CIRCLE_WIDTH, CIRCLE_COLOR, \
                     USER_COLOR, MACHINE_COLOR, PROGRAM_SIZE, CANVAS_SIZE, GRID_COLOR
