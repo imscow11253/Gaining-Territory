@@ -42,65 +42,70 @@ class MACHINE():
                 #if(self.check_triangle(temp_line)):
                 #    return temp_line
         
-        if len(self.posible_lines) > 10:    # 가능한 선분 수가 10개 이상이면 min-max 전에 전략 수립
-            #삼각형을 만드는 경우가 생기면 무조건 그 선을 우선적으로 그음.
-            max_value = 0
-            best_line = self.posible_lines[0]
-            for line in self.posible_lines:
-                temp = self.check_temp_triangle_return_num(self.drawn_lines,line)
-                if temp > max_value:
-                    max_value = temp
-                    best_line = line
+        #삼각형을 만드는 경우가 생기면 무조건 그 선을 우선적으로 그음.
+        max_value = 0
+        best_line = self.posible_lines[0]
+        for line in self.posible_lines:
+            temp = self.check_temp_triangle_return_num(self.drawn_lines,line)
+            if temp > max_value:
+                max_value = temp
+                best_line = line
 
-            if max_value != 0:
-                print("triangle case")
-                return best_line                 
-                        
-            #print(self.posible_lines)
+        if max_value != 0:
+            print("triangle case")
+            return best_line                 
+                    
+        #print(self.posible_lines)
 
-            #독립선분 긋기 --> DFS 완전탐색, 시간 이슈 발생 
-            simul_line_set = self.drawn_lines
-            self.minimum_independent_line_num = 1000000000
-            self.simulation_independent_line(0,simul_line_set)
+        #독립선분 긋기 --> DFS 완전탐색, 시간 이슈 발생 
+        simul_line_set = self.drawn_lines
+        self.minimum_independent_line_num = 1000000000
+        self.simulation_independent_line(0,simul_line_set)
 
-            #print(self.independent_lines_case)
-            #print(len(self.independent_lines_case))
+        #print(self.independent_lines_case)
+        #print(len(self.independent_lines_case))
 
-            # convexHull points 와 convexHull lines 생성
-            #convex_points = self.ConvexHull(self.whole_points)
-            #convex_lines = []
-            #convex_lines.append(sorted([convex_points[0], convex_points[-1]]))
-            #for i in range(0,len(convex_points)-1):
-            #    convex_lines.append(sorted([convex_points[i],convex_points[i+1]]))
+        #convexHull points 와 convexHull lines 생성
+        convex_points = self.ConvexHull(self.whole_points)
+        convex_lines = []
+        convex_lines.append(sorted([convex_points[0], convex_points[-1]]))
+        for i in range(0,len(convex_points)-1):
+            convex_lines.append(sorted([convex_points[i],convex_points[i+1]]))
+        
+        # 독립선분 최소 case에서 convexhull 위의 선분이 아닌 것을 선택 
 
-            # 독립선분 최소 case에서 convexhull 위의 선분이 아닌 것을 선택
-            max_length, longest_element = min([(len(x),x) for x in self.independent_lines_case])
-            for line in longest_element:
-                if line in self.drawn_lines:
-                    continue
-                else:
-                    # 독립 선분 중에 convex hull 위의 선이 아닌 것을 출력
-                    #if sorted(line) in convex_lines:
-                    #    continue
-                    #else:
-                    #    print("return = ", line)
-                    #    return [line[0], line[1]]
-                    print("return = ", line)
-                    print("independent line")
-                    return line
-            
-            #독립선분이 포화 상태일 때 min-max 적용
-            simul_line_set = self.drawn_lines
-            print("minmax")
-            self.min_max_start(simul_line_set)
-            return self.best_line
+        min_length, shortest_element = min([(len(x),x) for x in self.independent_lines_case])
+        for line_set in self.independent_lines_case:
+            if len(line_set) == min_length:
+                for line in line_set:
+                    if line in self.drawn_lines:
+                        continue
+                    else:
+                        if len(self.whole_points) == len(convex_points):
+                            #독립 선분 중에 convex hull 위의 선이 아닌것을 출력
+                            if sorted(line) in convex_lines: 
+                                continue
+                            else:
+                                print("return = ", line)
+                                print("independent line")
+                                return [line[0], line[1]]
+                        else:
+                            # if line[0] in convex_points and line[1] in convex_points:
+                            #     continue
+                            # else:
+                            #     print("return = ", line)
+                            #     print("independent line")
+                            #     return [line[0], line[1]]
+                            print("return = ", line)
+                            print("independent line")
+                            return [line[0], line[1]]
+        
+        # 독립선분이 포화 상태일 때 min-max 적용
+        simul_line_set = self.drawn_lines
+        print("minmax")
+        self.min_max_start(simul_line_set)
+        return self.best_line
 
-        else:   # 가능한 선분 수가 적으면 처음부터 min-max 적용 
-            simul_line_set = self.drawn_lines
-            print("minmax else")
-            self.min_max_start(simul_line_set)
-            print(self.best_line)
-            return self.best_line
 
         # default random return value 
         #available = [[point1, point2] for (point1, point2) in list(combinations(self.whole_points, 2)) if self.check_availability([point1, point2])]
@@ -111,7 +116,7 @@ class MACHINE():
         #print(i)
 
         # 독립변수 case 조사하는 개수 제한... 20까지 했는데 최적의 수가 21번째 나오면 답 없음... 타협 필요
-        if len(self.independent_lines_case) == 20:
+        if len(self.independent_lines_case) == 12:
             return
 
         # 독립변수 case 조사할 때, 선분 수가 가장 적은 case 보다 simulation set이 많아지면 즉시 종료
@@ -332,34 +337,43 @@ class MACHINE():
         print("min_max running....")
         alpha = -1000000
         beta = 100000 
+        evaluation_value =0
         self.best_line = [(0, 0), (1 , 0)]
-        self.max_move(simul_line_set, alpha, beta)  # 무조건 machine의 turn 이니까 max_move 먼저 호출
+        depth =0
+        self.max_move(depth, simul_line_set, alpha, beta, evaluation_value)  # 무조건 machine의 turn 이니까 max_move 먼저 호출
 
 
-    def max_move(self, simul_line_set, alpha, beta):
+    def max_move(self, depth, simul_line_set, alpha, beta, evaluation_value):
         if self.check_endgame(simul_line_set):
-            return self.EvalGameState(simul_line_set)
+            #print("simul_line_set = ", simul_line_set)
+            #print("evaluation_value = ", evaluation_value)
+            return evaluation_value
+        elif depth > 5:
+            return evaluation_value
         else:
             next_lines = self.GenerateMove(simul_line_set) #line list를 반환
             best_value = -1000000000
             temp_score = self.score
+            temp_evaluation_value = evaluation_value
             for next_line in next_lines:
                 #print(next_line)
                 # machine이 이기면 점수 +1
                 if(self.check_temp_triangle(simul_line_set, next_line)):
                     self.score[1] += 1
-            
-                #simul_line_set에 next line 넣고 다음 min_move 보기
+
+                #simul_line_set에 next line 넣고, evaluation_value 계산해서, 다음 min_move 보기
                 simul_line_set.append(next_line)
-                next_node_value = self.min_move(simul_line_set, alpha, beta)
+                evaluation_value += self.EvalGameStateMax(simul_line_set)
+                next_node_value = self.min_move(depth+1, simul_line_set, alpha, beta, evaluation_value)
                 # 나온 결과 값의 최댓값만 저장
                 if next_node_value > best_value:
                     best_value = next_node_value
                     self.best_line = next_line
                     alpha = max(alpha, best_value)
-                # 점수랑 simul_line_set 다시 원래대로 되돌리기
+                # 점수랑 simul_line_set랑 evaluation_value 다시 원래대로 되돌리기
                 simul_line_set.remove(next_line)
                 self.score = temp_score
+                evaluation_value = temp_evaluation_value
 
                 #alpha cuttoff
                 if beta <= alpha:
@@ -368,28 +382,35 @@ class MACHINE():
             return best_value
                 
 
-    def min_move(self, simul_line_set, alpha, beta):
+    def min_move(self, depth, simul_line_set, alpha, beta, evaluation_value):
         if self.check_endgame(simul_line_set):
-            return self.EvalGameState(simul_line_set)
+            #print("simul_line_set = ", simul_line_set)
+            #print("evaluation_value = ", evaluation_value)
+            return evaluation_value
+        elif depth > 5:
+            return evaluation_value
         else:
             next_lines = self.GenerateMove(simul_line_set) #line list를 반환
             best_value = 1000000000
             temp_score = self.score
+            temp_evaluation_value = evaluation_value
             for next_line in next_lines:
                 # user가 이기면 점수 +1
                 if(self.check_temp_triangle(simul_line_set, next_line)):
                     self.score[0] += 1
                 
-                #simul_line_set에 next line 넣고 다음 max_move 보기
+                #simul_line_set에 next line 넣고, evaluation_value 계산해서, 다음 max_move 보기
                 simul_line_set.append(next_line)
-                next_node_value = self.max_move(simul_line_set,alpha,beta)
+                evaluation_value -= self.EvalGameStateMin(simul_line_set)
+                next_node_value = self.max_move(depth+1, simul_line_set,alpha,beta, evaluation_value)
                 # 나온 결과 값의 최솟값만 저장
                 if next_node_value < best_value:
                     best_value = next_node_value
                     beta = min(beta, best_value)
-                # 점수랑 simul_line_set 다시 원래대로 되돌리기
+                # 점수랑 simul_line_set랑 evaluation_value 다시 원래대로 되돌리기
                 simul_line_set.remove(next_line)
                 self.score = temp_score
+                evaluation_value = temp_evaluation_value
 
                 #beta cutoff
                 if beta <= alpha:
@@ -398,9 +419,68 @@ class MACHINE():
             return best_value
     
 
-    def EvalGameState(self, simul_line_set):
-        # 현민님 코드
-        return 0
+    def EvalGameStateMax(self, simul_line_set):    #상수 파라미터들은 플레이 해보면서 고치기,1안:갯수 따라서 전부 점수 따로 매김
+        node_value=0
+        
+        if(self.check_next_triangle_return_num(simul_line_set[0:len(simul_line_set)-1:],simul_line_set[-1])==2):
+            node_value-=30  
+        elif(self.check_next_triangle_return_num(simul_line_set[0:len(simul_line_set)-1:],simul_line_set[-1])==1):
+            node_value-=10
+            
+        if(self.check_temp_triangle_return_num(simul_line_set[0:len(simul_line_set)-1:],simul_line_set[-1])==2):
+            node_value+=45   
+        elif(self.check_temp_triangle_return_num(simul_line_set[0:len(simul_line_set)-1:],simul_line_set[-1])==1):
+            node_value+=15
+        # else:    #user<score 수비 위주로 평가 
+        #     if(self.check_next_triangle_return_num(simul_line_set[0:len(simul_line_set)-1:],simul_line_set[-1])==2):
+        #         node_value-=50   
+        #     elif(self.check_next_triangle_return_num(simul_line_set[0:len(simul_line_set)-1:],simul_line_set[-1])==1):
+        #         node_value-=20
+                
+        #     if(self.check_temp_triangle_return_num(simul_line_set[0:len(simul_line_set)-1:],simul_line_set[-1])==2):
+        #         node_value+=45    
+        #     elif(self.check_temp_triangle_return_num(simul_line_set[0:len(simul_line_set)-1:],simul_line_set[-1])==1):
+        #         node_value+=15
+        
+        return node_value
+
+    def EvalGameStateMin(self, simul_line_set):    #상수 파라미터들은 플레이 해보면서 고치기,1안:갯수 따라서 전부 점수 따로 매김
+        node_value=0
+        
+        if(self.check_next_triangle_return_num(simul_line_set[0:len(simul_line_set)-1:],simul_line_set[-1])==2):
+            node_value-=45  
+        elif(self.check_next_triangle_return_num(simul_line_set[0:len(simul_line_set)-1:],simul_line_set[-1])==1):
+            node_value-=15
+            
+        if(self.check_temp_triangle_return_num(simul_line_set[0:len(simul_line_set)-1:],simul_line_set[-1])==2):
+            node_value+=30   
+        elif(self.check_temp_triangle_return_num(simul_line_set[0:len(simul_line_set)-1:],simul_line_set[-1])==1):
+            node_value+=10
+        # else:    #user<score 수비 위주로 평가 
+        #     if(self.check_next_triangle_return_num(simul_line_set[0:len(simul_line_set)-1:],simul_line_set[-1])==2):
+        #         node_value-=50   
+        #     elif(self.check_next_triangle_return_num(simul_line_set[0:len(simul_line_set)-1:],simul_line_set[-1])==1):
+        #         node_value-=20
+                
+        #     if(self.check_temp_triangle_return_num(simul_line_set[0:len(simul_line_set)-1:],simul_line_set[-1])==2):
+        #         node_value+=45    
+        #     elif(self.check_temp_triangle_return_num(simul_line_set[0:len(simul_line_set)-1:],simul_line_set[-1])==1):
+        #         node_value+=15
+        
+        return node_value
+    
+    def EvalGameState2(self, simul_line_set):    #상수 파라미터들은 플레이 해보면서 고치기,2안:갯수 차이로만 점수 계산
+        node_value=0
+        triangle_count=self.check_next_triangle_return_num(simul_line_set[0:len(simul_line_set)-1:],simul_line_set[-1])-self.check_temp_triangle_return_num(simul_line_set[0:len(simul_line_set)-1:],simul_line_set[-1])
+        if(triangle_count==-2):
+            node_value+=30
+        elif(triangle_count==-1):
+            node_value+=30
+        elif(triangle_count==1):
+            node_value-=15
+        elif(triangle_count==2):
+            node_value-=45
+        return node_value
 
 
     def GenerateMove(self, simul_line_set):
@@ -414,7 +494,14 @@ class MACHINE():
             temp_line = [point1, point2]
             if self.check_temp_availability(simul_line_set, temp_line):
                 posible_lines.append(temp_line)
-        
+
+        #posible_lines의 수에 따라서 생성할 child 노드 수 정하기 
+        # if len(posible_lines) >= 10:
+        #     num_of_child_node = 2
+        # else:
+        #     num_of_child_node = 5
+        num_of_child_node = 3
+
         #각각 가능한 선분에 대해 heuristic 값 구하기 
         # h(x) = getScore(x) - nextTriangle(x)
         for next_line in posible_lines:
@@ -434,18 +521,28 @@ class MACHINE():
             else:
                 h_x -= 1
 
-            evalueted_lines_value.append([next_line, h_x])
+            evalueted_lines_value.append([h_x, next_line])
             #print("next_line = ", next_line, " h_x = ", h_x)
 
         
-        num_of_child_node = 3
-        for i in range(num_of_child_node):
-            max_value = [[[0,0],[0,1]], -100000000]
-            for candidate in evalueted_lines_value:
-                if candidate[1] > max_value[1]:
-                    max_value = candidate
+        # for i in range(num_of_child_node):
+        #     max_value = [-1000000, [[0,0],[0,1]]]
+        #     for candidate in evalueted_lines_value:
+        #         if candidate[1] > max_value[1]:
+        #             max_value = candidate
+
+        #    return_next_lines.append(max_value[0])
+        
+        evalueted_lines_value.sort()
+        #print("evalueted_lines_value ", evalueted_lines_value)
+        if(len(evalueted_lines_value) < num_of_child_node):
+            for element in evalueted_lines_value:
+                return_next_lines.append(element[1])
+        else:
+            for i in range(num_of_child_node):
+                return_next_lines.append(evalueted_lines_value[i][1])
             
-            return_next_lines.append(max_value[0])
+    
 
         #print("candidate of node", return_next_lines)
         return return_next_lines
@@ -500,7 +597,13 @@ class MACHINE():
         connected_with_line = []
         return_value =0
 
-        for next_line in self.posible_lines:
+        posible_lines = []
+        for (point1, point2) in list(combinations(self.whole_points, 2)):
+            temp_line = [point1, point2]
+            if self.check_temp_availability(simul_line_set,temp_line):
+                posible_lines.append(temp_line)
+
+        for next_line in posible_lines:
             if next_line in simul_line_set:
                 continue
             elif point1 in next_line or point2 in next_line:
