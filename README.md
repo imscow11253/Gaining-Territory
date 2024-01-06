@@ -46,3 +46,17 @@ git clone https://github.com/JONHYOJIN/Gaining-Territory.git
 ```python
 python main.py
 ```
+
+</br>
+
+## My Comment
+
+
+### whole stream
+   
+1. check triangle
+2. check independent line
+3. min max algorithm
+
+</br> 
+자세한 내용과 진행 과정은 commit msg와 pdf 파일에 정리해두었다. 
